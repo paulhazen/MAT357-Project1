@@ -1,5 +1,8 @@
 import pandas
 import numpy as np
+# This is so that numpy will be quiet
+np.seterr(divide='ignore')
+import tqdm
 
 v_a = 0.3597
 v_b = -0.8111
@@ -35,6 +38,24 @@ def measure_model(model: tuple) -> tuple:
 
     return df, r, ln_r
 
+def randomly_find_model(n: int, max: float = 10, min: float = -10) -> tuple:
+  """
+  This function naively finds a model that fits the data by making random
+  guesses and keeping the one that performs best
+  """
 
+  random_models = np.random.uniform(low=min, high=max, size=(n, 3))
 
-test = measure_model(my_model)
+  best_model = (0, 0, 0)
+  best_score = -np.inf
+  for model in tqdm.tqdm(random_models, desc="Randomly trying to find model", total=n):     
+    model_performance = measure_model(model)
+    if best_score < model_performance[2]:
+       best_score = model_performance[2]
+       best_model = model
+
+  return best_model, best_score
+
+model = randomly_find_model(10000)
+
+print(f"The best model found was {model[0]} with a score of {model[1]}")
